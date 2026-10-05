@@ -45,7 +45,7 @@ graph LR
 
 ### 1. Installation
 ```bash
-git clone https://github.com/IrguCap/license-plate-detection-ocr.git
+git clone https://github.com/IgorBarduzzi/license-plate-detection-ocr.git
 cd license-plate-detection-ocr
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
