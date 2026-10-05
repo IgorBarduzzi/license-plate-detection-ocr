@@ -1,0 +1,33 @@
+# Datasets & Large Archives
+dataset/
+*.zip
+*.tar.gz
+*.rar
+
+# Exported Models & Weights
+export_plate_inplace/
+export_plate_model/
+*.tflite
+*.pt
+*.onnx
+runs/
+output/
+outputs/
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+.DS_Store
