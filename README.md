@@ -1,83 +1,42 @@
-# 🚗 License Plate Detection & OCR Preprocessing Pipeline
+# Detecção e OCR de Placas Veiculares
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-green.svg)](https://opencv.org/)
-[![TensorFlow Lite](https://img.shields.io/badge/TensorFlow%20Lite-Edge%20AI-orange.svg)](https://www.tensorflow.org/lite)
-[![YOLO](https://img.shields.io/badge/YOLO-Ultralytics-red.svg)](https://github.com/ultralytics/ultralytics)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Pipeline em Python para localizar placas veiculares em imagens com YOLO, tratar o recorte com OpenCV e extrair o texto por OCR (EasyOCR com fallback para Tesseract), classificando o resultado nos padrões brasileiros Mercosul (`ABC1D23`) e tradicional (`ABC1234`).
 
-An end-to-end computer vision pipeline for **Brazilian Vehicle License Plate Recognition (ALPR/LPR)**. The repository includes:
-1. **Model Training Pipeline:** Efficient object detection training using `tflite-model-maker` (EfficientDet-Lite0) with Pascal VOC XML annotations.
-2. **Inference & Bounding Box Extraction:** Deep learning inference with margin-adjusted dynamic cropping.
-3. **Advanced Image Preprocessing for OCR:** OpenCV pipeline designed to maximize text contrast on small, noisy, or distorted plates using CLAHE, Bilateral filtering, and adaptive Gaussian thresholding.
+## Etapas do pipeline
 
----
+1. **Detecção:** inferência via `ultralytics.YOLO` (`.pt` ou `.tflite`).
+2. **Recorte com margem:** expansão percentual da bounding box para evitar corte nos caracteres das bordas.
+3. **Pré-processamento:** upscale bicúbico 3x, filtro bilateral, CLAHE, unsharp masking, binarização adaptativa gaussiana e abertura morfológica.
+4. **OCR e validação:** leitura dos caracteres alfanuméricos e checagem por regex para distinguir padrão Mercosul e tradicional.
 
-## 🏗️ Pipeline Architecture
+## Instalação
 
-```mermaid
-graph LR
-    Input[📸 Raw Vehicle Image] --> Model[Object Detector: YOLO / EfficientDet]
-    Model --> Crop[Margin-Expanded Crop]
-    Crop --> Bicubic[Cubic Super-Resolution Scale]
-    Bicubic --> Filter[Bilateral Filter: Edge-Preserving Denoise]
-    Filter --> CLAHE[CLAHE: Local Contrast Equalization]
-    CLAHE --> Sharp[Unsharp Mask: Edge Enhancement]
-    Sharp --> Binary[Adaptive Gaussian Binarization]
-    Binary --> OCR([🔤 Clean Binary Image for OCR Engine])
-```
-
----
-
-## 🌟 Key Features
-
-- **🎯 Real-Time Edge Detection:** Designed for deployment on low-power devices and edge servers using lightweight EfficientDet-Lite and YOLO architectures.
-- **📐 Margin-Aware Cropping:** Automatically expands detected bounding boxes by a configurable margin percentage to prevent character cut-offs caused by tight predictions.
-- **✨ OCR Preprocessing Engine:**
-  - **Super-Resolution Upscaling:** Resizes small or distant plates to improve character definition.
-  - **Bilateral Filtering:** Smooths noise while strictly preserving sharp text edges.
-  - **CLAHE (Contrast Limited Adaptive Histogram Equalization):** Corrects uneven lighting and harsh shadows across the plate.
-  - **Adaptive Gaussian Thresholding:** Robust binarization that adapts to varying ambient brightness levels.
-
----
-
-## 🚀 Quick Start
-
-### 1. Installation
 ```bash
 git clone https://github.com/IgorBarduzzi/license-plate-detection-ocr.git
 cd license-plate-detection-ocr
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+.venv\Scripts\activate   # Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Running Inference & OCR Preprocessing
-To detect plates and generate preprocessed crops from an image:
+## Uso
+
+### Inferência em imagem
+
 ```bash
-python inference_ocr.py --weights path/to/model.pt --source test_image.jpg --out-dir output/
+python inference_ocr.py --model models/best_float16.tflite --source imagem.jpg --outdir saida
 ```
 
-### 3. Training a Custom TFLite Model
-To train with Pascal VOC format datasets (Images + XML annotations):
+O script salva no diretório de saída a imagem anotada, o recorte de cada placa, a versão binarizada enviada ao OCR e um JSON com coordenadas, confiança e texto lido.
+
+### Treinamento
+
+Com um dataset anotado no formato YOLO (`data.yaml` apontando para `train`/`val`):
+
 ```bash
-python train_plate_inplace.py
+python train_plate.py --data dataset/data.yaml --epochs 50 --export-tflite
 ```
 
----
+## Licença
 
-## 📁 Repository Structure
-
-```
-├── inference_ocr.py         # YOLO inference, crop with margin & OpenCV adaptive filters
-├── train_plate_inplace.py   # Pascal VOC dataloader & TFLite Model Maker training pipeline
-├── requirements.txt         # Project dependencies
-├── .gitignore               # Excludes raw datasets and large model weights
-└── README.md
-```
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
+MIT — veja [LICENSE](LICENSE).
